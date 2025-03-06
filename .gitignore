@@ -7,6 +7,8 @@
 
 # Skip this annoying file
 .DS_Store
+./outbox/*
+./inbox/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
