@@ -1,9 +1,15 @@
 import os
 import pandas as pd
+from datetime import datetime
 
 # Define the folder containing the Excel files
 folder_path = './Inbox'
-output_csv = './outbox/wirtz.csv'
+
+# Get the current date and format it as MM-DD-YY
+current_date = datetime.now().strftime("%m-%d-%y")
+
+# Define the output CSV file path with the current date
+output_csv = f'./outbox/Output-{current_date}.csv'
 
 # Initialize an empty DataFrame to hold all data
 combined_df = pd.DataFrame()
@@ -50,6 +56,9 @@ for file_name in os.listdir(folder_path):
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
+# Rename columns
+combined_df.rename(columns={'Source File': 'Year', 'Source Sheet': 'Production'}, inplace=True)
+
 # Save the combined DataFrame to a CSV file
 combined_df.to_csv(output_csv, index=False)
 
@@ -59,7 +68,7 @@ print(f"Total rows processed: {len(combined_df)}")
 print(f"Combined CSV saved as {output_csv}")
 
 # Define the path to the CSV file
-csv_file_path = './outbox/wirtz.csv'
+csv_file_path = output_csv
 
 # Define the required columns and their expected data types
 required_columns = {
@@ -70,8 +79,8 @@ required_columns = {
     'NetID': str,
     'Graduation Year': float,
     'Career': str,
-    'Source File': str,
-    'Source Sheet': str
+    'Year': str,
+    'Production': str
 }
 
 # Load the CSV file into a DataFrame
