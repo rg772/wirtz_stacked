@@ -1,9 +1,13 @@
 import os
 import pandas as pd
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Define the folder containing the Excel files
-folder_path = './Inbox'
+folder_path = os.getenv('FOLDER_PATH')
 
 # Get the current date and format it as MM-DD-YY
 current_date = datetime.now().strftime("%m-%d-%y")
