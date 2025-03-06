@@ -28,11 +28,8 @@ for file_name in files_to_move:
     destination_file = os.path.join(destination_dir, file_name)
     
     try:
-        if os.path.exists(destination_file):
-            print(f"File already exists and will not be overwritten: {file_name}")
-        else:
-            shutil.move(source_file, destination_file)
-            print(f"Moved: {file_name}")
+        shutil.move(source_file, destination_file)
+        print(f"Moved: {file_name}")
     except FileNotFoundError:
         print(f"File not found: {file_name}")
     except Exception as e:
