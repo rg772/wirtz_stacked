@@ -1,6 +1,7 @@
 import os
 import shutil
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -56,3 +57,15 @@ for file_name in os.listdir(csv_source_dir):
             print(f"CSV file not found: {file_name}")
         except Exception as e:
             print(f"Error copying CSV {file_name}: {e}")
+
+# Create an additional copy of the final CSV file named wirtz-master.csv
+final_csv = os.path.join(csv_destination_dir, f'Output-{datetime.now().strftime("%m-%d-%y")}.csv')
+master_csv = os.path.join(csv_destination_dir, 'wirtz-master.csv')
+
+try:
+    shutil.copy2(final_csv, master_csv)
+    print(f"Copied {final_csv} to {master_csv}")
+except FileNotFoundError:
+    print(f"Final CSV file not found: {final_csv}")
+except Exception as e:
+    print(f"Error copying to {master_csv}: {e}")
