@@ -9,6 +9,8 @@ This project contains a Python script that processes multiple Excel files from a
 - Python 3.6 or higher
 - `pandas` library
 - `openpyxl` library
+- `python-dotenv` library
+- `Office365-REST-Python-Client` library
 
 ## Setup
 
@@ -29,8 +31,26 @@ This project contains a Python script that processes multiple Excel files from a
 3. **Install the required libraries**:
 
     ```sh
-    pip install pandas openpyxl
+    pip install pandas openpyxl python-dotenv Office365-REST-Python-Client
     ```
+
+4. **Set up environment variables**:
+
+    Create a `.env` file in the root of your project directory with the following content:
+
+    ```properties
+    # .env
+    FOLDER_PATH=./Inbox
+
+    # SharePoint credentials and site information
+    SHAREPOINT_SITE_URL=https://nuwildcat.sharepoint.com/sites/SOC-wirtz-production-archive
+    SHAREPOINT_DOC_LIB=Archival Documents
+    SHAREPOINT_FOLDER=Input Files for Application
+    SHAREPOINT_CLIENT_ID=your_client_id
+    SHAREPOINT_CLIENT_SECRET=your_client_secret
+    ```
+
+    Replace `your_client_id` and `your_client_secret` with the actual values you obtained from Azure AD.
 
 ## Usage
 
@@ -42,16 +62,27 @@ This project contains a Python script that processes multiple Excel files from a
     python stack.py
     ```
 
-3. **Check the `./outbox` folder for the combined CSV file named `wirtz.csv`**.
+3. **Check the `./outbox` folder for the combined CSV file named `Output-MM-DD-YY.csv`**.
+
+## Testing SharePoint Connection
+
+1. **Run the test script** to list files in the specified SharePoint folder:
+
+    ```sh
+    python test_SP_list_sites.py
+    ```
+
+    This script will authenticate with SharePoint using the credentials provided in the `.env` file, access the specified document library and folder, and print the list of files in the folder.
 
 ## Script Details
 
 The script performs the following steps:
 
 1. Initializes an empty DataFrame to hold all data.
-2. Loops through all Excel files in the `./Inbox` folder.
+2. Loops through all Excel files in the specified folder.
 3. Reads each Excel file and loops through all its worksheets.
 4. Reads each worksheet into a DataFrame and adds columns for the source file and sheet name.
 5. Prints the name of the Excel file, worksheet, and the first and last name of each actor to the terminal.
 6. Appends the DataFrame to the combined DataFrame.
-7. Saves the combined DataFrame to a CSV file in the `./outbox` folder.
+7. Renames columns `Source File` to `Year` and `Source Sheet` to `Production`.
+8. Saves the combined DataFrame to a CSV file in the `./outbox` folder.
