@@ -10,6 +10,9 @@
 ./outbox/*
 ./inbox/*
 
+# Exclude SQLite database files
+*.sqlite
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
