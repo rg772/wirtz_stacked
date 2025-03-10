@@ -69,8 +69,8 @@ for file_name in os.listdir(folder_path):
                 
                 print(f"Actor: {first_name} {last_name}")
             
-            # Replace NaN values in 'Graduation Year' with 0
-            df['Graduation Year'] = df['Graduation Year'].fillna(0)
+            # Replace NaN values in 'Graduation Year' with 0 and ensure it is a number and not less than zero
+            df['Graduation Year'] = df['Graduation Year'].apply(lambda x: 0 if pd.isna(x) or isinstance(x, str) or not isinstance(x, (int, float)) or x < 0 else x)
             
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
