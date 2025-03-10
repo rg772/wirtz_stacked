@@ -38,8 +38,8 @@ for file_name in os.listdir(folder_path):
             df = pd.read_excel(file_path, sheet_name=sheet_name)
             
             # Add columns for the source file and sheet name
-            df['Source File'] = file_name
-            df['Source Sheet'] = sheet_name
+            df['Source File'] = file_name.strip()
+            df['Source Sheet'] = sheet_name.strip()
             
             # Explicitly delete unwanted columns
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
@@ -53,8 +53,8 @@ for file_name in os.listdir(folder_path):
             
             # Print the first and last name of each actor
             for index, row in df.iterrows():
-                first_name = row.get('First name', 'N/A')
-                last_name = row.get('Last name', 'N/A')
+                first_name = row.get('First name', 'N/A').strip()
+                last_name = row.get('Last name', 'N/A').strip()
                 print(f"Actor: {first_name} {last_name}")
             
             # Append the DataFrame to the combined DataFrame
