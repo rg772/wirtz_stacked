@@ -53,9 +53,24 @@ for file_name in os.listdir(folder_path):
             
             # Print the first and last name of each actor
             for index, row in df.iterrows():
-                first_name = row.get('First name', 'N/A').strip()
-                last_name = row.get('Last name', 'N/A').strip()
+                first_name = row.get('First name', 'N/A')
+                last_name = row.get('Last name', 'N/A')
+                
+                # Ensure first_name and last_name are strings before stripping
+                if isinstance(first_name, str):
+                    first_name = first_name.strip()
+                else:
+                    first_name = 'N/A'
+                
+                if isinstance(last_name, str):
+                    last_name = last_name.strip()
+                else:
+                    last_name = 'N/A'
+                
                 print(f"Actor: {first_name} {last_name}")
+            
+            # Replace NaN values in 'Graduation Year' with 0
+            df['Graduation Year'] = df['Graduation Year'].fillna(0)
             
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
