@@ -55,7 +55,13 @@ def extract_production_year(df):
     df['Graduation Year'] = pd.to_numeric(df['Graduation Year'], errors='coerce')
     
     # Calculate the difference between the two columns
-    df['Year Diff'] = df['ProductionYear'].subtract(df['Graduation Year'])
+    df['Year Diff'] = df['Graduation Year'].subtract(df['ProductionYear'])
+    
+    # remove columns after making df['Year Diff']
+    
+    # infer cohort column value if none exist
+
+    # remove df['Year Diff'] after cohort column is inferred
     
     return df
 
@@ -71,16 +77,10 @@ determine_if_cohort_column_exists(df, "Cohort")
 
 extract_production_year(df)
 
-if DEBUG:
-    print(df.head(10));
+
+debug_print(df.head(10));
 
 
-sys.exit()
-
-
-
-# Print the first few rows of the dataframe
-print(df.head())
 
 
  
