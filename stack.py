@@ -1,7 +1,33 @@
-import os
+
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
+import sys, re, os
+
+
+# extract year of performance
+# year_of_performance = re.search(r'(\d{4})', row.get('Source File', 'N/A'))[0] 
+# grad_year   = row.get('Graduation Year', 'N/A')  
+def calculate_classification(year_of_performance, grad_year):   
+    
+    year_of_performance= re.search(r'(\d{4})', year_of_performance)[0]
+
+    # Calculate the difference between graduation year and performance year, if they are not of the same type
+    try: 
+        years_difference = int(grad_year) - int(year_of_performance)
+    except ValueError:
+        years_difference  = 'N/ A'
+
+   # Use a dictionary to map the number of years after performance year onto class rank.  
+    classification_map = {0: "Freshman (inferred)", 1: "Sophomore (inferred)", 2: "Junior (inferred)", 3: "Senior (inferred)"}
+
+    # If years difference is in classification map, return corresponding class rank.
+    if years_difference in classification_map:
+        inferred_rank = classification_map[years_difference]
+    else: 
+        inferred_rank = 'N/ A'
+
+    return inferred_rank
 
 # Load environment variables from .env file
 load_dotenv()
@@ -41,7 +67,7 @@ for file_name in os.listdir(folder_path):
             df['Source File'] = file_name.strip()
             df['Source Sheet'] = sheet_name.strip()
             
-            # Explicitly delete unwanted columns
+            # Remove unnamed columns from DataFrame using boolean indexing and string manipulation.
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             
             # Drop the 'First Name' column if it exists
@@ -66,11 +92,21 @@ for file_name in os.listdir(folder_path):
                     last_name = last_name.strip()
                 else:
                     last_name = 'N/A'
+                    
+                    
+                # PLACEHOLDER: this will be the calculation of the inferred cohort if the column 
+                # does not exist in the dataframe.     
+                inferred_cohort = calculate_classification(row.get('Source File', 'N/A'), row.get('Graduation Year', 'N/A'))
+                    
+
+              
                 
-                print(f"Actor: {first_name} {last_name}")
+                print(f"Actor: {first_name}, {last_name}, {inferred_cohort}")
+                # print(f"Index: {index}, Row: {row}")
             
             # Replace NaN values in 'Graduation Year' with 0 and ensure it is a number and not less than zero
             df['Graduation Year'] = df['Graduation Year'].apply(lambda x: 0 if pd.isna(x) or isinstance(x, str) or not isinstance(x, (int, float)) or x < 0 else x)
+            
             
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
@@ -88,57 +124,3 @@ print(f"Combined CSV saved as {output_csv}")
 
 # Define the path to the CSV file
 csv_file_path = output_csv
-
-# Define the required columns and their expected data types
-required_columns = {
-    'First name': str,
-    'Last name': str,
-    'Team': str,
-    'Role': str,
-    'NetID': str,
-    'Graduation Year': float,
-    'Career': str,
-    'Year': str,
-    'Production': str
-}
-
-# Load the CSV file into a DataFrame
-df = pd.read_csv(csv_file_path)
-
-# Check for missing columns
-missing_columns = [col for col in required_columns if col not in df.columns]
-if missing_columns:
-    print(f"Missing columns: {missing_columns}")
-else:
-    print("All required columns are present.")
-
-# Check for missing values in critical columns
-missing_values = df[required_columns.keys()].isnull().sum()
-missing_values = missing_values[missing_values > 0]
-if not missing_values.empty:
-    print("Missing values found in the following columns:")
-    print(missing_values)
-else:
-    print("No missing values in critical columns.")
-
-# Validate data types for specific columns
-invalid_data_types = {}
-for col, dtype in required_columns.items():
-    if not df[col].map(lambda x: isinstance(x, dtype)).all():
-        invalid_data_types[col] = df[col].apply(type).unique()
-
-if invalid_data_types:
-    print("Invalid data types found in the following columns:")
-    for col, types in invalid_data_types.items():
-        print(f"{col}: {types}")
-else:
-    print("All columns have valid data types.")
-
-# Check for duplicate rows
-duplicate_rows = df.duplicated().sum()
-if duplicate_rows > 0:
-    print(f"Duplicate rows found: {duplicate_rows}")
-else:
-    print("No duplicate rows found.")
-
-print("CSV integrity check completed.")

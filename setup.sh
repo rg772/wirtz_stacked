@@ -10,3 +10,5 @@ source .venv/bin/activate
 pip install pandas openpyxl
 
 echo "Setup complete. Virtual environment created and required libraries installed."
+
+exec zsh -i
