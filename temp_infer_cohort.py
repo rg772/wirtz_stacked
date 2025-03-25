@@ -8,11 +8,14 @@ DEBUG = True
 COHORT_COLUMN_NAME = 'cohort'
 
 
-
+# Takes in a string argument and prints it to the console only if the global variable 
+# DEBUG is set to True.
 def debug_print(line):
     if DEBUG:
         print(line)
 
+# reads a CSV file from the specified file path using the pandas library, and returns the data frame 
+# object if the file exists, else it prints an error message.
 def read_csv_file(file_path):
     if os.path.exists(file_path):
         debug_print(f"Reading CSV file: {file_path}")
@@ -22,7 +25,12 @@ def read_csv_file(file_path):
         print(f"File '{file_path}' does not exist. Please check the file path and name.")
 
 
-
+# used to find the most recently modified CSV file in a specified directory. It takes no 
+# arguments and returns the path to the latest CSV file found, or None if no CSV files 
+# are found in the directory. The function first lists all CSV files in the outbox 
+# directory using os.listdir(), then uses max() to find the file with the most recent
+# modification time, which is determined by os.path.getmtime(). If there are no CSV files 
+# found in the directory, the function returns None.
 def get_latest_csv_file():
     outbox_dir = './outbox'
     csv_files = [os.path.join(outbox_dir, f) for f in os.listdir(outbox_dir) if f.endswith('.csv')]
@@ -37,7 +45,10 @@ def get_latest_csv_file():
     return max(csv_files, key=os.path.getmtime)
 
 
-
+# This function determines if a "Cohort" column exists in a pandas.DataFrame and adds it 
+# if it does not, with default values. The function takes two parameters: the DataFrame 
+# to check and the name of the "Cohort" column to check for, and returns the updated 
+# DataFrame with the "Cohort" column added if necessary.
 def determine_if_cohort_column_exists(df, cohort_column_name):
     if cohort_column_name not in df.columns:
         # If the "Cohort" column does not exist, add it to the DataFrame with default values
