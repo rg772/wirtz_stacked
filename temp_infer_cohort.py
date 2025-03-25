@@ -6,7 +6,6 @@ import numpy as np
 
 
 DEBUG = True
-COHORT_COLUMN_NAME = 'cohort'
 
 
 # Takes in a string argument and prints it to the console only if the global variable 
@@ -82,10 +81,19 @@ def extract_cohort_year(df):
     ]
 
     # Define corresponding cohort values
-    cohort_values = ["inferred freshmen", "inferred sophomore", "inferred junior", "inferred senior", "inferred senior+"]
+    cohort_values = [
+        "inferred freshmen",
+        "inferred sophomore", 
+        "inferred junior",
+        "inferred senior", 
+        "inferred senior+"
+    ]
 
     # Apply conditions to infer cohort values
     df['Cohort'] = np.select(undergrad_conditions, cohort_values, default=df['Cohort'])
+    
+    # clean up
+    del df['Year Diff']
     
     # return the updated DataFrame
     return df
@@ -107,6 +115,8 @@ extract_cohort_year(df)
 
 # Print the first 25 rows of the updated DataFrame
 debug_print(df.head(25));
+
+# TODO: add a function that takes in a dataframe and writes it out as a csv file
 
 
 
