@@ -1,6 +1,7 @@
 import os, sys, csv, subprocess
 import datetime, re
 import pandas as pd
+import numpy as np
 
 
 
@@ -58,7 +59,7 @@ def determine_if_cohort_column_exists(df, cohort_column_name):
 
 # Extract the production year from the 'Year' column. He gets the first four digit date from the string,
 # and then adds one to it after casting it as an integer
-def extract_production_year(df):
+def extract_cohort_year(df):
     df['ProductionYear'] = df['Year'].str.extract(r"(\d{4})", expand=False).astype(int) + 1
     
     # Convert "Production Year" and "Graduation Year" columns to numeric type
@@ -69,27 +70,43 @@ def extract_production_year(df):
     df['Year Diff'] = df['Graduation Year'].subtract(df['ProductionYear'])
     
     # remove columns after making df['Year Diff']
-    
-    # infer cohort column value if none exist
+    del df['ProductionYear']
 
-    # remove df['Year Diff'] after cohort column is inferred
+   # Define conditions for inferring cohort values
+    undergrad_conditions = [
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 3),
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 2),
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 1),
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 0),
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] > 0)
+    ]
+
+    # Define corresponding cohort values
+    cohort_values = ["inferred freshmen", "inferred sophomore", "inferred junior", "inferred senior", "inferred senior+"]
+
+    # Apply conditions to infer cohort values
+    df['Cohort'] = np.select(undergrad_conditions, cohort_values, default=df['Cohort'])
     
+    # return the updated DataFrame
     return df
 
-
+# Get the latest CSV file in the outbox directory
 csvfile = get_latest_csv_file()
+
+# Print the path to the latest CSV file
 debug_print(f"latest file: {csvfile}")
 
-
+# Read the CSV file into a pandas DataFrame
 df = read_csv_file(csvfile)
 
+# Check if the "Cohort" column exists in the DataFrame and add it if necessary
 determine_if_cohort_column_exists(df, "Cohort")
 
+# Extract the cohort year from the "Year" column
+extract_cohort_year(df)
 
-extract_production_year(df)
-
-
-debug_print(df.head(10));
+# Print the first 25 rows of the updated DataFrame
+debug_print(df.head(25));
 
 
 
