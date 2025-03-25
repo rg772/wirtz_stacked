@@ -77,7 +77,7 @@ def extract_cohort_year(df):
         (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 2),
         (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 1),
         (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] == 0),
-        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] > 0)
+        (df['Career'] == "Undergraduate") & (df['Cohort'].astype(str) == '') & (df['Year Diff'] < 0)
     ]
 
     # Define corresponding cohort values
