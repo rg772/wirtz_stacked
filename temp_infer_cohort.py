@@ -117,6 +117,7 @@ extract_cohort_year(df)
 debug_print(df.head(50));
 
 # TODO: add a function that takes in a dataframe and writes it out as a csv file
+df.to_csv(csvfile, index=False)
 
 
 
