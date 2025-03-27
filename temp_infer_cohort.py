@@ -82,11 +82,11 @@ def extract_cohort_year(df):
 
     # Define corresponding cohort values
     cohort_values = [
-        "inferred freshmen",
-        "inferred sophomore", 
-        "inferred junior",
-        "inferred senior", 
-        "inferred senior+"
+        "inferred freshmen, " + df['Year Diff'].astype(int).astype(str),
+        "inferred sophomore, " + df['Year Diff'].astype(int).astype(str), 
+        "inferred junior, " + df['Year Diff'].astype(int).astype(str),
+        "inferred senior, " + df['Year Diff'].astype(int).astype(str), 
+        "inferred senior+, " + df['Year Diff'].astype(int).astype(str)
     ]
 
     # Apply conditions to infer cohort values
@@ -114,7 +114,7 @@ determine_if_cohort_column_exists(df, "Cohort")
 extract_cohort_year(df)
 
 # Print the first 25 rows of the updated DataFrame
-debug_print(df.head(25));
+debug_print(df.head(50));
 
 # TODO: add a function that takes in a dataframe and writes it out as a csv file
 
