@@ -6,6 +6,12 @@ import sys, re, os
 
 
 
+# Check if the files in the directory can be opened by pandas
+# This function checks if the files in the directory can be opened by pandas
+# It iterates over each file in the directory and attempts to read it using pandas
+# If the file can be opened, it prints a message indicating success
+# If the file cannot be opened, it prints an error message
+# It also skips files that are not Excel files
 def check_files(directory):
     # iterate over each file in the directory
     for filename in os.listdir(directory):
@@ -24,8 +30,6 @@ def check_files(directory):
 
 
 # extract year of performance
-# year_of_performance = re.search(r'(\d{4})', row.get('Source File', 'N/A'))[0] 
-# grad_year   = row.get('Graduation Year', 'N/A')  
 def calculate_classification(year_of_performance, grad_year, career, play_title, person):   
     
     # Check if the year_of_performance is a string 
@@ -50,6 +54,8 @@ def calculate_classification(year_of_performance, grad_year, career, play_title,
     if years_difference < 0 or years_difference > 5:
         return f"Out of bounds: {years_difference} years difference"    
 
+    # debugging. because dysfunction is called in the context of lambda on the data frame because dysfunction is 
+    # called in the context of land on the data frame. I need a bit more information in the output.
     print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}, {person}")
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
