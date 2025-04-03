@@ -26,14 +26,16 @@ def check_files(directory):
 # extract year of performance
 # year_of_performance = re.search(r'(\d{4})', row.get('Source File', 'N/A'))[0] 
 # grad_year   = row.get('Graduation Year', 'N/A')  
-def calculate_classification(year_of_performance, grad_year, career, play_title):   
+def calculate_classification(year_of_performance, grad_year, career, play_title, person):   
     
     # Check if the year_of_performance is a string 
     if career != 'Undergraduate':
         return "N/A: not an undergrad"
 
-    
-    year_of_performance= int(re.search(r'(\d{4})', year_of_performance)[0])
+    # For some reason, it's only taking the first four digit year, 
+    # but the pattern is predictable so just add one
+    year_of_performance= int(re.search(r'(\d{4})', year_of_performance)[0]) + 1
+   
     grad_year = int(grad_year)
     
     # Glad you must be greater than zero
@@ -42,13 +44,13 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
 
 
     # Calculate the difference between graduation year and performance year, if they are not of the same type
-    years_difference = int(grad_year) - int(year_of_performance)
+    years_difference = grad_year - year_of_performance
     
     # if years_difference is negative or any other crazy bounds, return "N/A"
     if years_difference < 0 or years_difference > 5:
         return f"Out of bounds: {years_difference} years difference"    
 
-    print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}")
+    print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}, {person}")
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
     classification_map = {
@@ -156,8 +158,7 @@ for file_name in os.listdir(folder_path):
             # Cohort column
             if 'Cohort' not in df.columns:
                 df['Cohort'] = "n/a"    
-                
-            df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
+            df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name, first_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
             
             
             # Append the DataFrame to the combined DataFrame
