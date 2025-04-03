@@ -38,7 +38,7 @@ def calculate_classification(year_of_performance, grad_year, career, play_title,
    
     grad_year = int(grad_year)
     
-    # Glad you must be greater than zero
+    # Grad you must be greater than zero
     if grad_year <= 0:
         return "N/A: no grad date"
 
