@@ -30,7 +30,8 @@ def check_files(directory):
 
 
 # extract year of performance
-def calculate_classification(year_of_performance, grad_year, career, play_title, person):   
+# This function calculates the classification of a student based on their graduation year and the year of performance
+def calculate_classification(year_of_performance, grad_year, career, play_title):   
     
     # Check if the year_of_performance is a string 
     if career != 'Undergraduate':
@@ -56,7 +57,7 @@ def calculate_classification(year_of_performance, grad_year, career, play_title,
 
     # debugging. because dysfunction is called in the context of lambda on the data frame because dysfunction is 
     # called in the context of land on the data frame. I need a bit more information in the output.
-    print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}, {person}")
+    print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}")
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
     classification_map = {
@@ -136,27 +137,24 @@ for file_name in os.listdir(folder_path):
             print(f"Processing file: {BOLD}{BLUE}{file_name}{RESET}, sheet: {BOLD}{GREEN}{sheet_name}{RESET}")
             
             # Print the first and last name of each actor
-            for index, row in df.iterrows():
-                first_name = row.get('First name', 'N/A')
-                last_name = row.get('Last name', 'N/A')
+            # for index, row in df.iterrows():
+            #     first_name = row.get('First name', 'N/A')
+            #     last_name = row.get('Last name', 'N/A')
                 
-                # Ensure first_name and last_name are strings before stripping
-                if isinstance(first_name, str):
-                    first_name = first_name.strip()
-                else:
-                    first_name = 'N/A'
+            #     # Ensure first_name and last_name are strings before stripping
+            #     if isinstance(first_name, str):
+            #         first_name = first_name.strip()
+            #     else:
+            #         first_name = 'N/A'
                 
-                if isinstance(last_name, str):
-                    last_name = last_name.strip()
-                else:
-                    last_name = 'N/A'
+            #     if isinstance(last_name, str):
+            #         last_name = last_name.strip()
+            #     else:
+            #         last_name = 'N/A'
                            
-        
-
-              
-                
-                print(f"Actor: {first_name}, {last_name}")
-                # print(f"Index: {index}, Row: {row}")
+            #     # Print the actor's name 
+                # print(f"Actor: {first_name}, {last_name}")
+     
             
             # Replace NaN values in 'Graduation Year' with 0 and ensure it is a number and not less than zero
             df['Graduation Year'] = df['Graduation Year'].apply(lambda x: 0 if pd.isna(x) or isinstance(x, str) or not isinstance(x, (int, float)) or x < 0 else x)
@@ -164,7 +162,7 @@ for file_name in os.listdir(folder_path):
             # Cohort column
             if 'Cohort' not in df.columns:
                 df['Cohort'] = "n/a"    
-            df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name, first_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
+            df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
             
             
             # Append the DataFrame to the combined DataFrame
