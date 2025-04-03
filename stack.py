@@ -5,27 +5,68 @@ from dotenv import load_dotenv
 import sys, re, os
 
 
+
+def check_files(directory):
+    # iterate over each file in the directory
+    for filename in os.listdir(directory):
+        if filename.endswith(".xls") or filename.endswith(".xlsx"):
+            full_path = os.path.join(directory, filename)   # get full path of the file
+            
+            try:
+                pd.read_excel(full_path)  # attempt to read the excel file with pandas
+                
+                print(f'{filename} can be opened by pandas')  # if no error is raised, this means we could open the file
+            
+            except Exception as e:  
+                print(f'Failed to open {filename}. Error details:\n{str(e)}')  # in case an exception was raised (i.e., file couldn't be opened), we print the error message
+        else:
+            continue  # if file is not an excel file, skip it
+
+
 # extract year of performance
 # year_of_performance = re.search(r'(\d{4})', row.get('Source File', 'N/A'))[0] 
 # grad_year   = row.get('Graduation Year', 'N/A')  
-def calculate_classification(year_of_performance, grad_year):   
+def calculate_classification(year_of_performance, grad_year, career, play_title):   
     
-    year_of_performance= re.search(r'(\d{4})', year_of_performance)[0]
+    # Check if the year_of_performance is a string 
+    if career != 'Undergraduate':
+        return "N/A: not an undergrad"
+
+    
+    year_of_performance= int(re.search(r'(\d{4})', year_of_performance)[0])
+    grad_year = int(grad_year)
+    
+    # Glad you must be greater than zero
+    if grad_year <= 0:
+        return "N/A: no grad date"
+
 
     # Calculate the difference between graduation year and performance year, if they are not of the same type
-    try: 
-        years_difference = int(grad_year) - int(year_of_performance)
-    except ValueError:
-        years_difference  = 'N/ A'
+    years_difference = int(grad_year) - int(year_of_performance)
+    
+    # if years_difference is negative or any other crazy bounds, return "N/A"
+    if years_difference < 0 or years_difference > 5:
+        return f"Out of bounds: {years_difference} years difference"    
+
+    print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}")
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
-    classification_map = {0: "Freshman (inferred)", 1: "Sophomore (inferred)", 2: "Junior (inferred)", 3: "Senior (inferred)"}
+    classification_map = {
+        0: "Freshman (inferred)", 
+        1: "Sophomore (inferred)", 
+        2: "Junior (inferred)", 
+        3: "Senior (inferred)",
+
+    }
+    
+    # Catch out of bounds
+    classification_map.update({i: "Senior+ (inferred)" for i in range(4, 10)})  
+    classification_map.update({i: "Freshman+ (inferred)" for i in range(-1, -10)})  
+    
 
     # If years difference is in classification map, return corresponding class rank.
-    if years_difference in classification_map:
-        inferred_rank = classification_map[years_difference]
-    else: 
-        inferred_rank = 'N/ A'
+    inferred_rank = f"{classification_map[years_difference]}, {years_difference}"
+  
 
     return inferred_rank
 
@@ -34,6 +75,11 @@ load_dotenv()
 
 # Define the folder containing the Excel files
 folder_path = os.getenv('FOLDER_PATH')
+
+
+# check files
+check_files(folder_path)
+
 
 # Get the current date and format it as MM-DD-YY
 current_date = datetime.now().strftime("%m-%d-%y")
@@ -56,12 +102,16 @@ for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
         
         # Read the Excel file
-        xls = pd.ExcelFile(file_path)
+        xls = pd.ExcelFile(file_path) 
         
         # Loop through all sheets in the Excel file
         for sheet_name in xls.sheet_names:
             # Read the sheet into a DataFrame
             df = pd.read_excel(file_path, sheet_name=sheet_name)
+            
+            # Print headers of this worksheet
+            print("Headers for " + sheet_name + " are: ")
+            print(df.columns)
             
             # Add columns for the source file and sheet name
             df['Source File'] = file_name.strip()
@@ -92,20 +142,22 @@ for file_name in os.listdir(folder_path):
                     last_name = last_name.strip()
                 else:
                     last_name = 'N/A'
-                    
-                    
-                # PLACEHOLDER: this will be the calculation of the inferred cohort if the column 
-                # does not exist in the dataframe.     
-                inferred_cohort = calculate_classification(row.get('Source File', 'N/A'), row.get('Graduation Year', 'N/A'))
-                    
+                           
+        
 
               
                 
-                print(f"Actor: {first_name}, {last_name}, {inferred_cohort}")
+                print(f"Actor: {first_name}, {last_name}")
                 # print(f"Index: {index}, Row: {row}")
             
             # Replace NaN values in 'Graduation Year' with 0 and ensure it is a number and not less than zero
             df['Graduation Year'] = df['Graduation Year'].apply(lambda x: 0 if pd.isna(x) or isinstance(x, str) or not isinstance(x, (int, float)) or x < 0 else x)
+            
+            # Cohort column
+            if 'Cohort' not in df.columns:
+                df['Cohort'] = "n/a"    
+                
+            df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
             
             
             # Append the DataFrame to the combined DataFrame
@@ -113,6 +165,7 @@ for file_name in os.listdir(folder_path):
 
 # Rename columns
 combined_df.rename(columns={'Source File': 'Year', 'Source Sheet': 'Production'}, inplace=True)
+
 
 # Save the combined DataFrame to a CSV file
 combined_df.to_csv(output_csv, index=False)
