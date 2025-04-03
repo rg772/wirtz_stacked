@@ -42,15 +42,6 @@ This project contains a Python script that processes multiple Excel files from a
     # .env
     FOLDER_PATH=./Inbox
 
-    # SharePoint credentials and site information
-    SHAREPOINT_SITE_URL=https://nuwildcat.sharepoint.com/sites/SOC-wirtz-production-archive
-    SHAREPOINT_DOC_LIB=Archival Documents
-    SHAREPOINT_FOLDER=Input Files for Application
-    SHAREPOINT_CLIENT_ID=your_client_id
-    SHAREPOINT_CLIENT_SECRET=your_client_secret
-    ```
-
-    Replace `your_client_id` and `your_client_secret` with the actual values you obtained from Azure AD.
 
 ## Usage
 
