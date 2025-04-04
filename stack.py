@@ -62,14 +62,14 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
    # Use a dictionary to map the number of years after performance year onto class rank.  
     classification_map = {
         0: "Freshman (inferred)", 
-        1: "Sophomore (inferred)", 
-        2: "Junior (inferred)", 
-        3: "Senior (inferred)",
-
+        1: "Freshman (inferred)", 
+        2: "Sophomore (inferred)", 
+        3: "Junior (inferred)", 
+        4: "Senior (inferred)",
     }
     
     # Catch out of bounds
-    classification_map.update({i: "Senior+ (inferred)" for i in range(4, 10)})  
+    classification_map.update({i: "Senior+ (inferred)" for i in range(5, 10)})  
     classification_map.update({i: "Freshman+ (inferred)" for i in range(-1, -10)})  
     
 
