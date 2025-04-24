@@ -61,16 +61,16 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
     classification_map = {
-        0: "Freshman (inferred)", 
-        1: "Freshman (inferred)", 
+        
+        3: "Freshman (inferred)", 
         2: "Sophomore (inferred)", 
-        3: "Junior (inferred)", 
-        4: "Senior (inferred)",
+        1: "Junior (inferred)", 
+        0: "Senior (inferred)",
     }
     
     # Catch out of bounds
-    classification_map.update({i: "Senior+ (inferred)" for i in range(5, 10)})  
-    classification_map.update({i: "Freshman+ (inferred)" for i in range(-1, -10)})  
+    classification_map.update({i: "Freshman+ (inferred)" for i in range(4, 10)})  
+    classification_map.update({i: "Senior+ (inferred)" for i in range(-1, -10)})  
     
 
     # If years difference is in classification map, return corresponding class rank.
@@ -145,6 +145,25 @@ for file_name in os.listdir(folder_path):
                 df['Cohort'] = "n/a"    
             df['Cohort'] = df.apply(lambda row: calculate_classification(row['Source File'], row['Graduation Year'], row['Career'], sheet_name) if pd.isnull(row['Cohort']) else row['Cohort'], axis=1)            
             
+            # Trim the column ['First name']
+            if 'First name' in df.columns:
+                df['First name'] = df['First name'].str.strip()
+                
+            # Trim the column ['Last name']
+            if 'Last name' in df.columns:
+                df['Last name'] = df['Last name'].str.strip()
+                
+            # Trim the column ['Role']
+            if 'Role' in df.columns:
+                df['Role'] = df['Role'].str.strip()
+                
+            # Trim the column ['Team']
+            if 'Team' in df.columns:
+                df['Team'] = df['Team'].str.strip()
+                
+            # Trim the column ['NetID']
+            if 'NetID' in df.columns:
+                df['NetID'] = df['NetID'].astype(str).str.strip()
             
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
