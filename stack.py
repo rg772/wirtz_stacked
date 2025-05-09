@@ -1,4 +1,5 @@
 
+import json
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
@@ -79,23 +80,21 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
 
     return inferred_rank
 
-# Creates a dictionary of substitutions from the Excel file that substitutes the production name. Worksheet labels
-# are limited to 31 characters, so the first 31 characters of the production name are used as the key.
-# The value is the production name that will be used in the final CSV file. The function reads the Excel
-# file, creates a dictionary from the DataFrame, and returns it. The Excel file is expected to have 
-# two columns: the first column contains the production name and the second column contains the
-# corresponding substitution name.
+# Reads an Excel file containing production name substitutions and returns 
+# a dictionary mapping values from column A to their corresponding values in column B.
+# The Excel file is expected to be located at './Substitutions/production_name_substitutions.xlsx'.
+# The function does not assume any headers, ensuring the first row is included in the dictionary.
+# Returns:
+#     dict: A dictionary where keys are from column A and values are from column B.
 def get_substitutions():
+   # Load the Excel file
+    file_path = "./Substitutions/production_name_substitutions.xlsx"
+    df = pd.read_excel(file_path, usecols=[0, 1], header=None)
     
+    # Convert the DataFrame into a dictionary
+    data_dict = df.set_index(df.columns[0]).to_dict()[df.columns[1]]
     
-    
-    # Read the Excel file
-    substitutions_df = pd.read_excel('./Substitutions/production_name_substitutions.xlsx', sheet_name=0)
-    
-    # Create a dictionary from the DataFrame
-    substitutions_dict = dict(zip(substitutions_df.iloc[:, 0], substitutions_df.iloc[:, 1]))
-    
-    return substitutions_dict
+    return data_dict
 
 
 
@@ -104,12 +103,17 @@ def get_substitutions():
 # Start of the main script  
 ########################################################################
 
+
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Define the folder containing the Excel files
 folder_path = os.getenv('FOLDER_PATH')
 
+
+# load play name subsitutions into a local dictionary
+name_subs = get_substitutions()
 
 # check files
 check_files(folder_path)
@@ -189,6 +193,12 @@ for file_name in os.listdir(folder_path):
             # Trim the column ['NetID']
             if 'NetID' in df.columns:
                 df['NetID'] = df['NetID'].astype(str).str.strip()
+                
+                
+            # Substitute production names in column ['Production'] using the .get() function 
+            # for dicts. Returns value if name is found. Name doubled as both key and defult. 
+            df['Source Sheet'] = df['Source Sheet'].apply(lambda name: name_subs.get(name, name))
+            
             
             # Append the DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df], ignore_index=True)
