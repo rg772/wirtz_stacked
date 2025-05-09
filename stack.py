@@ -61,23 +61,19 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
     print(f" -- {years_difference} Year of performance: {year_of_performance}, grad year: {grad_year}, {career}, {play_title}")
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
-    classification_map = {
-        4: "First Year (inferred)",
-        3: "First Year (inferred)", 
-        2: "Sophomore (inferred)", 
-        1: "Junior (inferred)", 
-        0: "Senior (inferred)",
-    }
-    
-    # Catch out of bounds
-    classification_map.update({i: "First Year+ (inferred)" for i in range(5, 100)})  
-    
+    # Convert classification map to if/then logic
+    if years_difference == 4 or years_difference == 3:
+        return f"First Year (inferred), {years_difference}"
+    elif years_difference == 2:
+        return f"Sophomore (inferred), {years_difference}"
+    elif years_difference == 1:
+        return f"Junior (inferred), {years_difference}"
+    elif years_difference == 0:
+        return f"Senior (inferred), {years_difference}"
+    elif years_difference >= 5:
+        return f"First Year+ (inferred), {years_difference}"   
 
-    # If years difference is in classification map, return corresponding class rank.
-    inferred_rank = f"{classification_map[years_difference]}, {years_difference}"
-  
 
-    return inferred_rank
 
 # Reads an Excel file containing production name substitutions and returns 
 # a dictionary mapping values from column A to their corresponding values in column B.
