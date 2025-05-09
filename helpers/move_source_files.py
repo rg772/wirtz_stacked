@@ -73,3 +73,18 @@ except FileNotFoundError:
     print(f"Final CSV file not found: {final_csv}")
 except Exception as e:
     print(f"Error copying to {master_csv}: {e}")
+    
+    
+# Copy over play title subsitution file from {source_dir} + '/Substitutions'
+try:
+   
+    shutil.copy2(os.getenv('SUB_SOURCE_FILE'), './Substitutions/')
+except FileNotFoundError:
+    print(f"Substitution file not found: {os.getenv('SUB_SOURCE_FILE')}")
+except Exception as e:
+    print(f"Error copying substitution file: {e}")
+
+
+    
+    
+    

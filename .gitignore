@@ -9,6 +9,11 @@
 .DS_Store
 ./outbox/*
 ./inbox/*
+./Substitutions/*
+./outbox
+./inbox
+./Substitutions
+
 
 # Exclude SQLite database files
 *.sqlite

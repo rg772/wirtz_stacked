@@ -79,6 +79,31 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
 
     return inferred_rank
 
+# Creates a dictionary of substitutions from the Excel file that substitutes the production name. Worksheet labels
+# are limited to 31 characters, so the first 31 characters of the production name are used as the key.
+# The value is the production name that will be used in the final CSV file. The function reads the Excel
+# file, creates a dictionary from the DataFrame, and returns it. The Excel file is expected to have 
+# two columns: the first column contains the production name and the second column contains the
+# corresponding substitution name.
+def get_substitutions():
+    
+    
+    
+    # Read the Excel file
+    substitutions_df = pd.read_excel('./Substitutions/production_name_substitutions.xlsx', sheet_name=0)
+    
+    # Create a dictionary from the DataFrame
+    substitutions_dict = dict(zip(substitutions_df.iloc[:, 0], substitutions_df.iloc[:, 1]))
+    
+    return substitutions_dict
+
+
+
+
+########################################################################
+# Start of the main script  
+########################################################################
+
 # Load environment variables from .env file
 load_dotenv()
 
