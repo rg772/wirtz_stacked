@@ -53,8 +53,8 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
     years_difference = grad_year - year_of_performance
     
     # if years_difference is negative or any other crazy bounds, return "N/A"
-    if years_difference < 0 or years_difference > 5:
-        return f"Out of bounds: {years_difference} years difference"    
+    if years_difference < 0:
+        return f"Senior (inferred)+: {years_difference}"   
 
     # debugging. because dysfunction is called in the context of lambda on the data frame because dysfunction is 
     # called in the context of land on the data frame. I need a bit more information in the output.
@@ -62,7 +62,7 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
 
    # Use a dictionary to map the number of years after performance year onto class rank.  
     classification_map = {
-        
+        4: "First Year (inferred)",
         3: "First Year (inferred)", 
         2: "Sophomore (inferred)", 
         1: "Junior (inferred)", 
@@ -70,8 +70,7 @@ def calculate_classification(year_of_performance, grad_year, career, play_title)
     }
     
     # Catch out of bounds
-    classification_map.update({i: "First Year+ (inferred)" for i in range(4, 10)})  
-    classification_map.update({i: "Senior+ (inferred)" for i in range(-1, -10)})  
+    classification_map.update({i: "First Year+ (inferred)" for i in range(5, 100)})  
     
 
     # If years difference is in classification map, return corresponding class rank.
