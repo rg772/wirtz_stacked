@@ -190,8 +190,9 @@ for file_name in os.listdir(folder_path):
                 df['NetID'] = df['NetID'].astype(str).str.strip()
                 
                 
-            # Substitute production names in column ['Production'] using the .get() function 
-            # for dicts. Returns value if name is found. Name doubled as both key and defult. 
+            # Substitute production names in column ['Source Sheet'] which will be renamed to 
+            # ['Production'] using the .get() function for dicts. Returns value if name is 
+            # found. Name doubled as both key and defult. 
             df['Source Sheet'] = df['Source Sheet'].apply(lambda name: name_subs.get(name, name))
             
             
