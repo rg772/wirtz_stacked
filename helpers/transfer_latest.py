@@ -22,10 +22,11 @@ def find_latest_csv():
 
 def scp_file(local_file, remote_user, remote_host, remote_path):
     """Transfer file via SCP directly to target directory"""
+    cmd = ['scp', local_file, f"{remote_user}@{remote_host}:{remote_path}/"]
+    print(' '.join(cmd))
+    
     try:
-        subprocess.run([
-            'scp', local_file, f"{remote_user}@{remote_host}:{remote_path}/"
-        ], check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
         
         print(f"Successfully transferred {local_file} to {remote_path}")
         return True
@@ -46,7 +47,7 @@ def main():
     # SCP parameters
     remote_user = os.getenv("REMOTE_USER")
     remote_host = os.getenv("REMOTE_HOST")
-    remote_path = os.getenv
+    remote_path = os.getenv("REMOTE_PATH")
     
     # Transfer file
     success = scp_file(latest_csv, remote_user, remote_host, remote_path)
