@@ -16,6 +16,11 @@ csv_destination_dir = os.getenv('FINAL_OUTPUT_CSV')
 
 # List of files to copy
 files_to_copy = [
+    '2011-2012 Season.xlsx',
+    '2012-2013 Season.xlsx',
+    '2013-2014 Season.xlsx',
+    '2014-2015 Season.xlsx',
+    '2015-2016 Season.xlsx',
     '2016-2017 Season.xlsx',
     '2017-2018 Season.xlsx',
     '2018-2019 Season.xlsx',

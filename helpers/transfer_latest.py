@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# This action transfers the processed file to the WordPress site. This is mostly a convenience.
+
+
 import os
 import glob
 import subprocess
