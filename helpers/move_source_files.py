@@ -1,3 +1,32 @@
+"""
+File Copy Automation Script
+
+This script automates copying and organizing theater season data files:
+1. Copies Excel season files from a source directory to an 'Inbox' folder
+2. Copies processed CSV files from 'outbox' to a final output location 
+3. Creates a master CSV file for tracking all theater data
+4. Copies play title substitution reference file
+
+Required Environment Variables (.env file):
+- SOURCE_DIR: Location of source Excel season files
+- FINAL_OUTPUT_CSV: Destination for processed CSV files
+- SUB_SOURCE_FILE: Location of play title substitution file
+
+Folder Structure:
+- /Inbox: Destination for copied Excel season files
+- /outbox: Location of processed CSV files
+- /Substitutions: Destination for title substitution file
+"""
+
+import os
+import shutil
+from dotenv import load_dotenv
+from datetime import datetime
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Rest of code remains the same...
 import os
 import shutil
 from dotenv import load_dotenv
@@ -43,17 +72,18 @@ for file_name in files_to_copy:
     
     try:
         shutil.copy2(source_file, destination_file)
-        print(f"Copied: {file_name}")
+        print(f"✓ Successfully copied: {file_name} to {destination_file}")
     except FileNotFoundError:
-        print(f"File not found: {file_name}")
+        print(f"⚠ Error: File not found: {file_name}")
     except Exception as e:
-        print(f"Error copying {file_name}: {e}")
-
+        print(f"❌ Error copying {file_name}: {str(e)}")
 # Ensure the CSV destination directory exists
 if not os.path.exists(csv_destination_dir):
     os.makedirs(csv_destination_dir)
 
 # Copy all CSV files from the outbox directory to the final output directory
+print("\nCopying CSV files from outbox to final output directory...")
+csv_count = 0
 for file_name in os.listdir(csv_source_dir):
     if file_name.endswith('.csv'):
         source_file = os.path.join(csv_source_dir, file_name)
@@ -61,12 +91,14 @@ for file_name in os.listdir(csv_source_dir):
         
         try:
             shutil.copy2(source_file, destination_file)
-            print(f"Copied CSV: {destination_file}")
+            csv_count += 1
+            print(f"✓ Successfully copied: {file_name} to {destination_file}")
         except FileNotFoundError:
-            print(f"CSV file not found: {file_name}")
+            print(f"⚠ Error: CSV file not found: {file_name}")
         except Exception as e:
-            print(f"Error copying CSV {file_name}: {e}")
+            print(f"❌ Error copying {file_name}: {str(e)}")
 
+print(f"\nCSV copy complete. {csv_count} files processed.\n")
 # Create an additional copy of the final CSV file named wirtz-master.csv
 final_csv = os.path.join(csv_destination_dir, f'Output-{datetime.now().strftime("%m-%d-%y")}.csv')
 master_csv = os.path.join(csv_destination_dir, 'wirtz-master.csv')
