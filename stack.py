@@ -213,3 +213,23 @@ print(f"Combined CSV saved as {output_csv}")
 
 # Define the path to the CSV file
 csv_file_path = output_csv
+
+# Generate processing summary report
+print("\n" + "="*60)
+print("STACKWIRTZ DATA PROCESSING SUMMARY REPORT")
+print("="*60)
+print(f"Processing Date: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
+print(f"Output File: {output_csv}")
+print(f"Total Records Processed: {len(combined_df):,}")
+print(f"\nFiles Processed:")
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        xls = pd.ExcelFile(os.path.join(folder_path, file_name))
+        print(f"  • {file_name} ({len(xls.sheet_names)} worksheets)")
+print(f"\nData Processing Steps Completed:")
+print(f"  • Extracted data from all Excel worksheets")
+print(f"  • Applied production name substitutions")
+print(f"  • Calculated student classifications based on graduation year")
+print(f"  • Combined all data into single CSV file")
+print(f"  • Cleaned and standardized column data")
+print("="*60)
