@@ -1,144 +1,359 @@
-diff --git a/.gitignore b/.gitignore
-index 5e3b0cc..8d44c9d 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -144,5 +144,8 @@ dmypy.json
- cython_debug/
- 
- 
--# AGENTS
--AGENTS.md
-\ No newline at end of file
-+# Markdown files (except README)
-+*.md
-+*.MD
-+!README.md
-+!README.MD
-\ No newline at end of file
 diff --git a/README.md b/README.md
-index 2c9aa31..a75c0fa 100644
+index a75c0fa..18d4500 100644
 --- a/README.md
 +++ b/README.md
-@@ -55,6 +55,14 @@ This project contains a Python script that processes multiple Excel files from a
+@@ -63,15 +63,6 @@ This project contains a Python script that processes multiple Excel files from a
  
- 3. **Check the `./outbox` folder for the combined CSV file named `Output-MM-DD-YY.csv`**.
+     This matches the output CSV against the Master Archive List and creates a combined file with extended data.
  
-+4. **(Optional) Run post-processing to match with Master Archive List**:
-+
-+    ```sh
-+    python after_process.py
-+    ```
-+
-+    This matches the output CSV against the Master Archive List and creates a combined file with extended data.
-+
- ## Testing SharePoint Connection
+-## Testing SharePoint Connection
+-
+-1. **Run the test script** to list files in the specified SharePoint folder:
+-
+-    ```sh
+-    python test_SP_list_sites.py
+-    ```
+-
+-    This script will authenticate with SharePoint using the credentials provided in the `.env` file, access the specified document library and folder, and print the list of files in the folder.
  
- 1. **Run the test script** to list files in the specified SharePoint folder:
-diff --git a/helpers/transfer_latest.py b/helpers/transfer_latest.py
-deleted file mode 100644
-index bbc9308..0000000
---- a/helpers/transfer_latest.py
-+++ /dev/null
-@@ -1,86 +0,0 @@
--#!/usr/bin/env python3
+ ## Script Details
+ 
+diff --git a/after_process.py b/after_process.py
+index 0649b21..5177a57 100644
+--- a/after_process.py
++++ b/after_process.py
+@@ -1,15 +1,24 @@
+ #!/usr/bin/env python3
+ """after_process.py - Match Output CSV with Master Archive List"""
+ 
++import os
++import shutil
++from dotenv import load_dotenv
++
++# Load environment variables
++load_dotenv()
+ from pathlib import Path
+ import csv
+ from typing import List, Dict, Optional, Tuple
+ 
+ # Output configuration
+ OUTPUT_DIR = Path("./outbox")
+-OUTPUT_FILENAME = "new.output.csv"
++OUTPUT_FILENAME_WIRTZ_MASTER = "wirtz-master.csv"
+ MASTER_ARCHIVE_LIST = "./Substitutions/Master_Archive_List.csv"
+ 
++# Input directory (same as output for now)
++INPUT_DIR = OUTPUT_DIR
++
+ 
+ class WirtzMaster:
+     """Utility class for working with Output CSV files."""
+@@ -81,6 +90,7 @@ class ExtendedData:
+         return None
+     
+ 
++
+     
+     
+ 
+@@ -110,24 +120,59 @@ def main() -> None:
+     for row in rows:
+         result = ed.lookup(row.get("Production", ""), WirtzMaster.convert_year(row.get("Year", "")))
+         if result:
+-            combined = {**row, **result}
++            # Remove Active column from result before merging
++            result_filtered = {k: v for k, v in result.items() if k not in ("Active", "Opening Day")}
++            combined = {**row, **result_filtered}
+             combined_rows.append(combined)
+-            for key, value in combined.items():
+-                print(f"\033[1;36m{key:<30}\033[0m {value}")
+-            print()
 -
--# This action transfers the processed file to the WordPress site. This is mostly a convenience.
+-
+-    # write file
++    
++    # write new flattened master file
+     if combined_rows:
+-        output_path = OUTPUT_DIR / OUTPUT_FILENAME
++        output_path = OUTPUT_DIR / OUTPUT_FILENAME_WIRTZ_MASTER
++        fieldnames = list(combined_rows[0].keys())
+         with output_path.open("w", newline="", encoding="utf-8") as f:
+-            writer = csv.DictWriter(f, fieldnames=combined_rows[0].keys())
++            writer = csv.DictWriter(f, fieldnames=fieldnames)
+             writer.writeheader()
+             writer.writerows(combined_rows)
+         print(f"Written to {output_path}")
 -
 -
--import os
--import glob
--import subprocess
--import sys
--from dotenv import load_dotenv
 -
--# Load environment variables from .env file
--load_dotenv()
--
--def find_latest_csv():
--    """
--    Find the most recently modified CSV file in the ./outbox directory
--    
--    Returns:
--        str: Path to the latest CSV file if found
--        None: If no CSV files exist in the directory
--    """
--    # Search for all .csv files in the outbox directory
--    csv_files = glob.glob('./outbox/*.csv')
--    
--    # Return None if no CSV files are found
--    if not csv_files:
--        print("No CSV files found in ./outbox")
--        return None
--    
--    # Find and return the most recently modified CSV file
--    latest_file = max(csv_files, key=os.path.getmtime)
--    return latest_file
--
--
--def scp_file(local_file, remote_user, remote_host, remote_path):
--    """
--    Transfer file via SCP directly to target directory
--    
--    Args:
--        local_file (str): Path to local file to transfer
--        remote_user (str): Username on remote host
--        remote_host (str): Remote hostname or IP address
--        remote_path (str): Destination directory path on remote host
--        
--    Returns:
--        bool: True if transfer successful, False if failed
--    """
--    # Construct scp command with remote destination in format: user@host:path/
--    cmd = ['scp', local_file, f"{remote_user}@{remote_host}:{remote_path}/"]
--    print(' '.join(cmd))
--    
--    try:
--        # Execute scp command and check for errors
--        subprocess.run(cmd, check=True, capture_output=True, text=True)
--        
--        print(f"Successfully transferred {local_file} to {remote_path}")
--        return True
--        
--    except subprocess.CalledProcessError as e:
--        # Handle scp command failure
--        print(f"SCP transfer failed: {e}")
--        print(f"Error output: {e.stderr}")
--        return False
--
--def main():
++        print()
++      
++        # Print header row
++        print("  ".join(f"\033[1;36m{h}\033[0m" for h in fieldnames))
++        print("-" * 80)
++
++        # Print each row mirroring CSV column order
++        colors = [
++            "\033[97m",   # bright white
++            "\033[96m",   # cyan
++            "\033[93m",   # yellow
++            "\033[92m",   # green
++            "\033[95m",   # magenta
++            "\033[94m",   # blue
++        ]
++        reset = "\033[0m"
++        for combined in combined_rows:
++            parts = []
++            for i, k in enumerate(fieldnames):
++                color = colors[i % len(colors)]
++                val = combined.get(k, "")
++                parts.append(f"{color}{val}{reset}")
++            print("  ".join(parts))
++
++            print("")
++
++
++    # copy file back to Sharepoint
++    final_output_path = os.getenv('FINAL_OUTPUT_CSV')   
++    if not final_output_path:
++        print("⚠ FINAL_OUTPUT_CSV not set in .env, skipping copy")
++    else:
++        try:
++            shutil.copy2(output_path, final_output_path)
++            print(f"✓ Successfully copied: {output_path} to {final_output_path}")
++        except FileNotFoundError:
++            print(f"⚠ Error: CSV file not found: {output_path}")
++        except Exception as e:
++            print(f"❌ Error copying {output_path}: {str(e)}")
+ 
+ 
+ 
+diff --git a/helpers/move_data_file_to_wordpress.py b/helpers/move_data_file_to_wordpress.py
+index bbc9308..65c7a7d 100644
+--- a/helpers/move_data_file_to_wordpress.py
++++ b/helpers/move_data_file_to_wordpress.py
+@@ -64,12 +64,13 @@ def scp_file(local_file, remote_user, remote_host, remote_path):
+         return False
+ 
+ def main():
 -    # Find latest CSV file
 -    latest_csv = find_latest_csv()
 -    if not latest_csv:
--        sys.exit(1)
--    
++    latest_csv = "outbox/wirtz-master.csv"
++    
++    if not os.path.exists(latest_csv):
++        print(f"File not found: {latest_csv}")
+         sys.exit(1)
+     
 -    print(f"Latest CSV file: {latest_csv}")
--    
--    # SCP parameters
--    remote_user = os.getenv("REMOTE_USER")
--    remote_host = os.getenv("REMOTE_HOST")
--    remote_path = os.getenv("REMOTE_PATH")
--    
--    # Transfer file
--    success = scp_file(latest_csv, remote_user, remote_host, remote_path)
--    
--    if not success:
--        sys.exit(1)
--
--if __name__ == "__main__":
--    main()
-\ No newline at end of file
++    print(f"Using CSV file: {latest_csv}")
+     
+     # SCP parameters
+     remote_user = os.getenv("REMOTE_USER")
+diff --git a/helpers/move_source_files.py b/helpers/move_source_files.py
+index ff5660e..e57d9dc 100644
+--- a/helpers/move_source_files.py
++++ b/helpers/move_source_files.py
+@@ -99,20 +99,15 @@ for file_name in os.listdir(csv_source_dir):
+             print(f"❌ Error copying {file_name}: {str(e)}")
+ 
+ print(f"\nCSV copy complete. {csv_count} files processed.\n")
+-# Create an additional copy of the final CSV file named wirtz-master.csv
+-final_csv = os.path.join(csv_destination_dir, f'Output-{datetime.now().strftime("%m-%d-%y")}.csv')
+-master_csv = os.path.join(csv_destination_dir, 'wirtz-master.csv')
+ 
+-try:
+-    shutil.copy2(final_csv, master_csv)
+-    print(f"Copied {final_csv} to {master_csv}")
+-except FileNotFoundError:
+-    print(f"Final CSV file not found: {final_csv}")
+-except Exception as e:
+-    print(f"Error copying to {master_csv}: {e}")
++
++# wirtz_master is now changed. It is moved inside the after_process.py
+     
+     
+-# Copy over play title subsitution file from {source_dir} + '/Substitutions'
++# Copy play title substitution file from SharePoint to local Substitutions folder.
++# The source file on SharePoint is editable by anyone on the team and serves as
++# a shared reference for normalizing play titles. This step pulls the latest
++# version of that file into the local environment for processing.
+ try:
+    
+     shutil.copy2(os.getenv('SUB_SOURCE_FILE'), './Substitutions/')
+diff --git a/pbcopy b/pbcopy
+index 30126da..dfcde06 100644
+--- a/pbcopy
++++ b/pbcopy
+@@ -1,144 +0,0 @@
+-diff --git a/.gitignore b/.gitignore
+-index 5e3b0cc..8d44c9d 100644
+---- a/.gitignore
+-+++ b/.gitignore
+-@@ -144,5 +144,8 @@ dmypy.json
+- cython_debug/
+- 
+- 
+--# AGENTS
+--AGENTS.md
+-\ No newline at end of file
+-+# Markdown files (except README)
+-+*.md
+-+*.MD
+-+!README.md
+-+!README.MD
+-\ No newline at end of file
+-diff --git a/README.md b/README.md
+-index 2c9aa31..a75c0fa 100644
+---- a/README.md
+-+++ b/README.md
+-@@ -55,6 +55,14 @@ This project contains a Python script that processes multiple Excel files from a
+- 
+- 3. **Check the `./outbox` folder for the combined CSV file named `Output-MM-DD-YY.csv`**.
+- 
+-+4. **(Optional) Run post-processing to match with Master Archive List**:
+-+
+-+    ```sh
+-+    python after_process.py
+-+    ```
+-+
+-+    This matches the output CSV against the Master Archive List and creates a combined file with extended data.
+-+
+- ## Testing SharePoint Connection
+- 
+- 1. **Run the test script** to list files in the specified SharePoint folder:
+-diff --git a/helpers/transfer_latest.py b/helpers/transfer_latest.py
+-deleted file mode 100644
+-index bbc9308..0000000
+---- a/helpers/transfer_latest.py
+-+++ /dev/null
+-@@ -1,86 +0,0 @@
+--#!/usr/bin/env python3
+--
+--# This action transfers the processed file to the WordPress site. This is mostly a convenience.
+--
+--
+--import os
+--import glob
+--import subprocess
+--import sys
+--from dotenv import load_dotenv
+--
+--# Load environment variables from .env file
+--load_dotenv()
+--
+--def find_latest_csv():
+--    """
+--    Find the most recently modified CSV file in the ./outbox directory
+--    
+--    Returns:
+--        str: Path to the latest CSV file if found
+--        None: If no CSV files exist in the directory
+--    """
+--    # Search for all .csv files in the outbox directory
+--    csv_files = glob.glob('./outbox/*.csv')
+--    
+--    # Return None if no CSV files are found
+--    if not csv_files:
+--        print("No CSV files found in ./outbox")
+--        return None
+--    
+--    # Find and return the most recently modified CSV file
+--    latest_file = max(csv_files, key=os.path.getmtime)
+--    return latest_file
+--
+--
+--def scp_file(local_file, remote_user, remote_host, remote_path):
+--    """
+--    Transfer file via SCP directly to target directory
+--    
+--    Args:
+--        local_file (str): Path to local file to transfer
+--        remote_user (str): Username on remote host
+--        remote_host (str): Remote hostname or IP address
+--        remote_path (str): Destination directory path on remote host
+--        
+--    Returns:
+--        bool: True if transfer successful, False if failed
+--    """
+--    # Construct scp command with remote destination in format: user@host:path/
+--    cmd = ['scp', local_file, f"{remote_user}@{remote_host}:{remote_path}/"]
+--    print(' '.join(cmd))
+--    
+--    try:
+--        # Execute scp command and check for errors
+--        subprocess.run(cmd, check=True, capture_output=True, text=True)
+--        
+--        print(f"Successfully transferred {local_file} to {remote_path}")
+--        return True
+--        
+--    except subprocess.CalledProcessError as e:
+--        # Handle scp command failure
+--        print(f"SCP transfer failed: {e}")
+--        print(f"Error output: {e.stderr}")
+--        return False
+--
+--def main():
+--    # Find latest CSV file
+--    latest_csv = find_latest_csv()
+--    if not latest_csv:
+--        sys.exit(1)
+--    
+--    print(f"Latest CSV file: {latest_csv}")
+--    
+--    # SCP parameters
+--    remote_user = os.getenv("REMOTE_USER")
+--    remote_host = os.getenv("REMOTE_HOST")
+--    remote_path = os.getenv("REMOTE_PATH")
+--    
+--    # Transfer file
+--    success = scp_file(latest_csv, remote_user, remote_host, remote_path)
+--    
+--    if not success:
+--        sys.exit(1)
+--
+--if __name__ == "__main__":
+--    main()
+-\ No newline at end of file
+-diff --git a/run.sh b/run.sh
+-index cecf506..a1c6f65 100755
+---- a/run.sh
+-+++ b/run.sh
+-@@ -24,4 +24,7 @@ mkdir -p outbox
+- python3 helpers/move_source_files.py
+- 
+- # Run the main processing script
+--python3 stack.py
+-\ No newline at end of file
+-+python3 stack.py
+-+
+-+# Run the post-processing script to match with Master Archive List
+-+python3 after_process.py
+-\ No newline at end of file
 diff --git a/run.sh b/run.sh
-index cecf506..a1c6f65 100755
+index a1c6f65..9d76ea3 100755
 --- a/run.sh
 +++ b/run.sh
-@@ -24,4 +24,7 @@ mkdir -p outbox
- python3 helpers/move_source_files.py
+@@ -18,7 +18,11 @@ if [ ! -f ".env" ]; then
+ fi
  
- # Run the main processing script
--python3 stack.py
-\ No newline at end of file
-+python3 stack.py
+ # Create necessary directories
++rm -rf outbox
++rm -rf inbox
+ mkdir -p outbox
++mkdir -p inbox
 +
-+# Run the post-processing script to match with Master Archive List
+ 
+ # Copy source files to inbox
+ python3 helpers/move_source_files.py
+@@ -27,4 +31,7 @@ python3 helpers/move_source_files.py
+ python3 stack.py
+ 
+ # Run the post-processing script to match with Master Archive List
+-python3 after_process.py
+\ No newline at end of file
 +python3 after_process.py
++
++# move file to wordpress 
++python3 helpers/move_data_file_to_wordpress.py
 \ No newline at end of file

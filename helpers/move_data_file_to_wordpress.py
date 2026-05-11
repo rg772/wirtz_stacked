@@ -64,12 +64,13 @@ def scp_file(local_file, remote_user, remote_host, remote_path):
         return False
 
 def main():
-    # Find latest CSV file
-    latest_csv = find_latest_csv()
-    if not latest_csv:
+    latest_csv = "outbox/wirtz-master.csv"
+    
+    if not os.path.exists(latest_csv):
+        print(f"File not found: {latest_csv}")
         sys.exit(1)
     
-    print(f"Latest CSV file: {latest_csv}")
+    print(f"Using CSV file: {latest_csv}")
     
     # SCP parameters
     remote_user = os.getenv("REMOTE_USER")

@@ -18,7 +18,11 @@ if [ ! -f ".env" ]; then
 fi
 
 # Create necessary directories
+rm -rf outbox
+rm -rf inbox
 mkdir -p outbox
+mkdir -p inbox
+
 
 # Copy source files to inbox
 python3 helpers/move_source_files.py
@@ -28,3 +32,6 @@ python3 stack.py
 
 # Run the post-processing script to match with Master Archive List
 python3 after_process.py
+
+# move file to wordpress 
+python3 helpers/move_data_file_to_wordpress.py

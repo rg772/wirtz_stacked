@@ -63,15 +63,6 @@ This project contains a Python script that processes multiple Excel files from a
 
     This matches the output CSV against the Master Archive List and creates a combined file with extended data.
 
-## Testing SharePoint Connection
-
-1. **Run the test script** to list files in the specified SharePoint folder:
-
-    ```sh
-    python test_SP_list_sites.py
-    ```
-
-    This script will authenticate with SharePoint using the credentials provided in the `.env` file, access the specified document library and folder, and print the list of files in the folder.
 
 ## Script Details
 

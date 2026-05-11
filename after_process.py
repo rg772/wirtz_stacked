@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """after_process.py - Match Output CSV with Master Archive List"""
 
+import os
+import shutil
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 from pathlib import Path
 import csv
 from typing import List, Dict, Optional, Tuple
 
 # Output configuration
 OUTPUT_DIR = Path("./outbox")
-OUTPUT_FILENAME = "new.output.csv"
+OUTPUT_FILENAME_WIRTZ_MASTER = "wirtz-master.csv"
 MASTER_ARCHIVE_LIST = "./Substitutions/Master_Archive_List.csv"
+
+# Input directory (same as output for now)
+INPUT_DIR = OUTPUT_DIR
 
 
 class WirtzMaster:
@@ -81,6 +90,7 @@ class ExtendedData:
         return None
     
 
+
     
     
 
@@ -110,24 +120,59 @@ def main() -> None:
     for row in rows:
         result = ed.lookup(row.get("Production", ""), WirtzMaster.convert_year(row.get("Year", "")))
         if result:
-            combined = {**row, **result}
+            # Remove Active column from result before merging
+            result_filtered = {k: v for k, v in result.items() if k not in ("Active", "Opening Day")}
+            combined = {**row, **result_filtered}
             combined_rows.append(combined)
-            for key, value in combined.items():
-                print(f"\033[1;36m{key:<30}\033[0m {value}")
-            print()
-
-
-    # write file
+    
+    # write new flattened master file
     if combined_rows:
-        output_path = OUTPUT_DIR / OUTPUT_FILENAME
+        output_path = OUTPUT_DIR / OUTPUT_FILENAME_WIRTZ_MASTER
+        fieldnames = list(combined_rows[0].keys())
         with output_path.open("w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=combined_rows[0].keys())
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(combined_rows)
         print(f"Written to {output_path}")
+        print()
+      
+        # Print header row
+        print("  ".join(f"\033[1;36m{h}\033[0m" for h in fieldnames))
+        print("-" * 80)
+
+        # Print each row mirroring CSV column order
+        colors = [
+            "\033[97m",   # bright white
+            "\033[96m",   # cyan
+            "\033[93m",   # yellow
+            "\033[92m",   # green
+            "\033[95m",   # magenta
+            "\033[94m",   # blue
+        ]
+        reset = "\033[0m"
+        for combined in combined_rows:
+            parts = []
+            for i, k in enumerate(fieldnames):
+                color = colors[i % len(colors)]
+                val = combined.get(k, "")
+                parts.append(f"{color}{val}{reset}")
+            print("  ".join(parts))
+
+            print("")
 
 
-
+    # copy file back to Sharepoint
+    final_output_path = os.getenv('FINAL_OUTPUT_CSV')   
+    if not final_output_path:
+        print("⚠ FINAL_OUTPUT_CSV not set in .env, skipping copy")
+    else:
+        try:
+            shutil.copy2(output_path, final_output_path)
+            print(f"✓ Successfully copied: {output_path} to {final_output_path}")
+        except FileNotFoundError:
+            print(f"⚠ Error: CSV file not found: {output_path}")
+        except Exception as e:
+            print(f"❌ Error copying {output_path}: {str(e)}")
 
 
 

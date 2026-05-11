@@ -99,20 +99,15 @@ for file_name in os.listdir(csv_source_dir):
             print(f"❌ Error copying {file_name}: {str(e)}")
 
 print(f"\nCSV copy complete. {csv_count} files processed.\n")
-# Create an additional copy of the final CSV file named wirtz-master.csv
-final_csv = os.path.join(csv_destination_dir, f'Output-{datetime.now().strftime("%m-%d-%y")}.csv')
-master_csv = os.path.join(csv_destination_dir, 'wirtz-master.csv')
 
-try:
-    shutil.copy2(final_csv, master_csv)
-    print(f"Copied {final_csv} to {master_csv}")
-except FileNotFoundError:
-    print(f"Final CSV file not found: {final_csv}")
-except Exception as e:
-    print(f"Error copying to {master_csv}: {e}")
+
+# wirtz_master is now changed. It is moved inside the after_process.py
     
     
-# Copy over play title subsitution file from {source_dir} + '/Substitutions'
+# Copy play title substitution file from SharePoint to local Substitutions folder.
+# The source file on SharePoint is editable by anyone on the team and serves as
+# a shared reference for normalizing play titles. This step pulls the latest
+# version of that file into the local environment for processing.
 try:
    
     shutil.copy2(os.getenv('SUB_SOURCE_FILE'), './Substitutions/')
