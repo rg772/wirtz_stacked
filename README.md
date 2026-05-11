@@ -55,6 +55,14 @@ This project contains a Python script that processes multiple Excel files from a
 
 3. **Check the `./outbox` folder for the combined CSV file named `Output-MM-DD-YY.csv`**.
 
+4. **(Optional) Run post-processing to match with Master Archive List**:
+
+    ```sh
+    python after_process.py
+    ```
+
+    This matches the output CSV against the Master Archive List and creates a combined file with extended data.
+
 ## Testing SharePoint Connection
 
 1. **Run the test script** to list files in the specified SharePoint folder:

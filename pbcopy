@@ -1,0 +1,144 @@
+diff --git a/.gitignore b/.gitignore
+index 5e3b0cc..8d44c9d 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -144,5 +144,8 @@ dmypy.json
+ cython_debug/
+ 
+ 
+-# AGENTS
+-AGENTS.md
+\ No newline at end of file
++# Markdown files (except README)
++*.md
++*.MD
++!README.md
++!README.MD
+\ No newline at end of file
+diff --git a/README.md b/README.md
+index 2c9aa31..a75c0fa 100644
+--- a/README.md
++++ b/README.md
+@@ -55,6 +55,14 @@ This project contains a Python script that processes multiple Excel files from a
+ 
+ 3. **Check the `./outbox` folder for the combined CSV file named `Output-MM-DD-YY.csv`**.
+ 
++4. **(Optional) Run post-processing to match with Master Archive List**:
++
++    ```sh
++    python after_process.py
++    ```
++
++    This matches the output CSV against the Master Archive List and creates a combined file with extended data.
++
+ ## Testing SharePoint Connection
+ 
+ 1. **Run the test script** to list files in the specified SharePoint folder:
+diff --git a/helpers/transfer_latest.py b/helpers/transfer_latest.py
+deleted file mode 100644
+index bbc9308..0000000
+--- a/helpers/transfer_latest.py
++++ /dev/null
+@@ -1,86 +0,0 @@
+-#!/usr/bin/env python3
+-
+-# This action transfers the processed file to the WordPress site. This is mostly a convenience.
+-
+-
+-import os
+-import glob
+-import subprocess
+-import sys
+-from dotenv import load_dotenv
+-
+-# Load environment variables from .env file
+-load_dotenv()
+-
+-def find_latest_csv():
+-    """
+-    Find the most recently modified CSV file in the ./outbox directory
+-    
+-    Returns:
+-        str: Path to the latest CSV file if found
+-        None: If no CSV files exist in the directory
+-    """
+-    # Search for all .csv files in the outbox directory
+-    csv_files = glob.glob('./outbox/*.csv')
+-    
+-    # Return None if no CSV files are found
+-    if not csv_files:
+-        print("No CSV files found in ./outbox")
+-        return None
+-    
+-    # Find and return the most recently modified CSV file
+-    latest_file = max(csv_files, key=os.path.getmtime)
+-    return latest_file
+-
+-
+-def scp_file(local_file, remote_user, remote_host, remote_path):
+-    """
+-    Transfer file via SCP directly to target directory
+-    
+-    Args:
+-        local_file (str): Path to local file to transfer
+-        remote_user (str): Username on remote host
+-        remote_host (str): Remote hostname or IP address
+-        remote_path (str): Destination directory path on remote host
+-        
+-    Returns:
+-        bool: True if transfer successful, False if failed
+-    """
+-    # Construct scp command with remote destination in format: user@host:path/
+-    cmd = ['scp', local_file, f"{remote_user}@{remote_host}:{remote_path}/"]
+-    print(' '.join(cmd))
+-    
+-    try:
+-        # Execute scp command and check for errors
+-        subprocess.run(cmd, check=True, capture_output=True, text=True)
+-        
+-        print(f"Successfully transferred {local_file} to {remote_path}")
+-        return True
+-        
+-    except subprocess.CalledProcessError as e:
+-        # Handle scp command failure
+-        print(f"SCP transfer failed: {e}")
+-        print(f"Error output: {e.stderr}")
+-        return False
+-
+-def main():
+-    # Find latest CSV file
+-    latest_csv = find_latest_csv()
+-    if not latest_csv:
+-        sys.exit(1)
+-    
+-    print(f"Latest CSV file: {latest_csv}")
+-    
+-    # SCP parameters
+-    remote_user = os.getenv("REMOTE_USER")
+-    remote_host = os.getenv("REMOTE_HOST")
+-    remote_path = os.getenv("REMOTE_PATH")
+-    
+-    # Transfer file
+-    success = scp_file(latest_csv, remote_user, remote_host, remote_path)
+-    
+-    if not success:
+-        sys.exit(1)
+-
+-if __name__ == "__main__":
+-    main()
+\ No newline at end of file
+diff --git a/run.sh b/run.sh
+index cecf506..a1c6f65 100755
+--- a/run.sh
++++ b/run.sh
+@@ -24,4 +24,7 @@ mkdir -p outbox
+ python3 helpers/move_source_files.py
+ 
+ # Run the main processing script
+-python3 stack.py
+\ No newline at end of file
++python3 stack.py
++
++# Run the post-processing script to match with Master Archive List
++python3 after_process.py
+\ No newline at end of file

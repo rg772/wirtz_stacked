@@ -25,3 +25,6 @@ python3 helpers/move_source_files.py
 
 # Run the main processing script
 python3 stack.py
+
+# Run the post-processing script to match with Master Archive List
+python3 after_process.py
